@@ -13,6 +13,8 @@ import DayOfWeekShape from '../shapes/DayOfWeekShape';
 import CalendarInfoPositionShape from '../shapes/CalendarInfoPositionShape';
 
 export default {
+    min: momentPropTypes.momentObj,
+    max: momentPropTypes.momentObj,
   // required props for a functional interactive SingleDatePicker
   date: momentPropTypes.momentObj,
   onDateChange: PropTypes.func.isRequired,
