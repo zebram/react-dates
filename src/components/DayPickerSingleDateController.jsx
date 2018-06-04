@@ -32,6 +32,8 @@ import {
 import DayPicker from './DayPicker';
 
 const propTypes = forbidExtraProps({
+  minDate: momentPropTypes.momentObj,
+  maxDate: momentPropTypes.momentObj,
   date: momentPropTypes.momentObj,
   onDateChange: PropTypes.func,
 
@@ -591,6 +593,8 @@ export default class DayPickerSingleDateController extends React.Component {
 
   render() {
     const {
+      minDate,
+      maxDate,
       numberOfMonths,
       orientation,
       monthFormat,
@@ -625,6 +629,8 @@ export default class DayPickerSingleDateController extends React.Component {
 
     return (
       <DayPicker
+        minDate={minDate}
+        maxDate={maxDate}
         orientation={orientation}
         enableOutsideDays={enableOutsideDays}
         modifiers={visibleDays}

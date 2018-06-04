@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import momentPropTypes from 'react-moment-proptypes';
 import shallowCompare from 'react-addons-shallow-compare';
 import { forbidExtraProps, nonNegativeInteger } from 'airbnb-prop-types';
 import { css, withStyles, withStylesPropTypes } from 'react-with-styles';
@@ -45,10 +46,12 @@ const MONTH_PADDING = 23;
 const DAY_PICKER_PADDING = 9;
 const PREV_TRANSITION = 'prev';
 const NEXT_TRANSITION = 'next';
+const SELECT_YEAR_TRANSITION = 'select year';
 
 const propTypes = forbidExtraProps({
   ...withStylesPropTypes,
-
+  minDate: momentPropTypes.momentObj,
+  maxDate: momentPropTypes.momentObj,
   // calendar presentation props
   enableOutsideDays: PropTypes.bool,
   numberOfMonths: PropTypes.number,
@@ -72,6 +75,9 @@ const propTypes = forbidExtraProps({
   navPrev: PropTypes.node,
   navNext: PropTypes.node,
   noNavButtons: PropTypes.bool,
+
+  onYearChange: PropTypes.func,
+
   onPrevMonthClick: PropTypes.func,
   onNextMonthClick: PropTypes.func,
   onMultiplyScrollableMonths: PropTypes.func, // VERTICAL_SCROLLABLE daypickers only
@@ -101,6 +107,8 @@ const propTypes = forbidExtraProps({
 });
 
 export const defaultProps = {
+  minDate: moment(),
+  maxDate: null,
   // calendar presentation props
   enableOutsideDays: false,
   numberOfMonths: 2,
@@ -124,6 +132,7 @@ export const defaultProps = {
   navPrev: null,
   navNext: null,
   noNavButtons: false,
+  onYearChange() {},
   onPrevMonthClick() {},
   onNextMonthClick() {},
   onMultiplyScrollableMonths() {},
@@ -190,6 +199,10 @@ class DayPicker extends React.Component {
 
     this.onKeyDown = this.onKeyDown.bind(this);
     this.throttledKeyDown = throttle(this.onFinalKeyDown, 200, { trailing: false });
+
+    this.renderMonth = this.renderMonth.bind(this);
+    this.onYearChange = this.onYearChange.bind(this);
+
     this.onPrevMonthClick = this.onPrevMonthClick.bind(this);
     this.onNextMonthClick = this.onNextMonthClick.bind(this);
     this.multiplyScrollableMonths = this.multiplyScrollableMonths.bind(this);
@@ -398,6 +411,52 @@ class DayPicker extends React.Component {
     }
   }
 
+
+    renderMonth(date) {
+        const {minDate, maxDate} = this.props;
+        let curr = date?date:moment();
+        let maxYear = maxDate?maxDate.year():moment().add(100, 'years').year();
+        let minYear = minDate?minDate.year():moment().year();
+        let yearOptions = [];
+        for(let yr=minYear; yr<=maxYear; yr++){
+            yr==curr.year()?yearOptions.push(<option key={yr} value={yr} selected>{yr}</option>)
+                            :yearOptions.push(<option key={yr} value={yr}>{yr}</option>);
+        }
+        return (
+            <div>
+                {moment.months()[curr.month()]}
+                <select style={{marginLeft: 3, fontSize:18, background:"transparent", border:"1px solid #e4e7e7"}} onChange={(e)=>{this.onYearChange(e.target.value,e)}}>
+                  {yearOptions}
+                </select>
+            </div>
+        )
+    }
+    onYearChange(selectedYear, e) {
+      console.log(`onYearChange ${selectedYear}`);
+      const { numberOfMonths, isRTL } = this.props;
+      const { currentMonth, calendarMonthWidth } = this.state;
+
+      if (e) e.preventDefault();
+/*
+      let translationValue = this.isVertical() ? this.calendarMonthHeights[0] : calendarMonthWidth;
+
+      if (this.isHorizontal()) {
+        if (isRTL) {
+          translationValue = -2 * calendarMonthWidth;
+        }
+
+        const newMonthHeight = Math.max(0, ...this.calendarMonthHeights.slice(0, numberOfMonths));
+        this.adjustDayPickerHeight(newMonthHeight);
+      }
+*/
+      this.setState({
+        monthTransition: SELECT_YEAR_TRANSITION,
+        translationValue: -2 * calendarMonthWidth,
+        focusedDate: null,
+        nextFocusedDate: currentMonth.year(selectedYear),
+      });
+    }
+
   onPrevMonthClick(nextFocusedDate, e) {
     const { numberOfMonths, isRTL } = this.props;
     const { calendarMonthWidth } = this.state;
@@ -424,6 +483,7 @@ class DayPicker extends React.Component {
   }
 
   onNextMonthClick(nextFocusedDate, e) {
+    console.log(`onNextMonthClick`);
     const { isRTL } = this.props;
     const { calendarMonthWidth } = this.state;
 
@@ -438,7 +498,6 @@ class DayPicker extends React.Component {
       const newMonthHeight = Math.max(0, ...this.calendarMonthHeights.slice(2));
       this.adjustDayPickerHeight(newMonthHeight);
     }
-
     this.setState({
       monthTransition: NEXT_TRANSITION,
       translationValue,
@@ -458,6 +517,8 @@ class DayPicker extends React.Component {
       firstVisibleMonthIndex -= 1;
     } else if (monthTransition === NEXT_TRANSITION) {
       firstVisibleMonthIndex += 1;
+    } else if (monthTransition === SELECT_YEAR_TRANSITION) {
+      firstVisibleMonthIndex -= 1;
     }
 
     return firstVisibleMonthIndex;
@@ -502,6 +563,9 @@ class DayPicker extends React.Component {
     this.transitionContainer = ref;
   }
 
+  maybeTransitionSelectedYear(newFocusedDAte) {
+    return true;
+  }
   maybeTransitionNextMonth(newFocusedDate) {
     const { numberOfMonths } = this.props;
     const { currentMonth, focusedDate } = this.state;
@@ -554,6 +618,7 @@ class DayPicker extends React.Component {
   }
 
   updateStateAfterMonthTransition() {
+    console.log(`updateStateAfterMonthTransition`);
     const {
       onPrevMonthClick,
       onNextMonthClick,
@@ -578,6 +643,8 @@ class DayPicker extends React.Component {
     } else if (monthTransition === NEXT_TRANSITION) {
       if (onNextMonthClick) onNextMonthClick();
       newMonth.add(1, 'month');
+    } else if (monthTransition === SELECT_YEAR_TRANSITION) {
+      firstVisibleMonthIndex += 1;
     }
 
     let newFocusedDate = null;
@@ -911,7 +978,7 @@ class DayPicker extends React.Component {
                   onDayClick={onDayClick}
                   onDayMouseEnter={onDayMouseEnter}
                   onDayMouseLeave={onDayMouseLeave}
-                  renderMonth={renderMonth}
+                  renderMonth={renderMonth?renderMonth:this.renderMonth}
                   renderCalendarDay={renderCalendarDay}
                   renderDayContents={renderDayContents}
                   onMonthTransitionEnd={this.updateStateAfterMonthTransition}

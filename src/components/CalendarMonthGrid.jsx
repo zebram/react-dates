@@ -122,6 +122,7 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentDidMount() {
+      console.log(`componentDidMount ${this.container}`);
     const { setCalendarMonthHeights } = this.props;
     this.removeEventListener = addEventListener(
       this.container,
@@ -135,6 +136,8 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+      console.log(` componentWillReceiveProps`);
+      console.log( nextProps);
     const { initialMonth, numberOfMonths, orientation } = nextProps;
     const { months } = this.state;
 
@@ -173,6 +176,8 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+      console.log(`componentDidUpdate`);
+          console.log(prevProps);
     const {
       isAnimating,
       transitionDuration,
@@ -202,6 +207,7 @@ class CalendarMonthGrid extends React.Component {
   }
 
   onTransitionEnd() {
+      console.log(`onTransitionEnd`);
     const { onMonthTransitionEnd } = this.props;
     onMonthTransitionEnd();
   }

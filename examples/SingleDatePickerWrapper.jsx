@@ -18,8 +18,8 @@ const propTypes = {
   initialDate: momentPropTypes.momentObj,
 
   ...omit(SingleDatePickerShape, [
-    'min',
-    'max',
+    'minDate',
+    'maxDate',
     'date',
     'onDateChange',
     'focused',
@@ -28,8 +28,8 @@ const propTypes = {
 };
 
 const defaultProps = {
-  min: moment(),
-  max: null,
+  minDate: moment(),
+  maxDate: moment('20200220','YYYYMMDD'),
   // example props for the demo
   autoFocus: false,
   initialDate: null,
@@ -89,71 +89,48 @@ class SingleDatePickerWrapper extends React.Component {
     this.state = {
       focused: props.autoFocus,
       date: props.initialDate,
-      min: props.min,
-      max:props.max,
+      minDate: props.minDate?props.minDate:moment(),
+      maxDate: props.maxDate?props.maxDate:moment().add(100,'years')
     };
 
     this.onDateChange = this.onDateChange.bind(this);
     this.onFocusChange = this.onFocusChange.bind(this);
     this.isOutsideRange = this.isOutsideRange.bind(this);
-    this.renderMonth = this.renderMonth.bind(this);
-    this.onYearChange = this.onYearChange.bind(this);
   }
   onDateChange(date) {
     this.setState({ date });
-  }
-  onYearChange(year) {
-      const {date} = this.state;
-      const newDate = date?date.clone().year(year):moment("00000101","YYYYMMDD").year(year);
-      this.onDateChange(newDate)
-      this.onFocusChange({ focused: false });
   }
   onFocusChange({ focused }) {
     this.setState({ focused });
   }
   isOutsideRange(date) {
-      const {min, max} = this.state;
-      return !isInclusivelyBtwnDays(date, min, max);
-  }
-  renderMonth(date) {
-      const {min, max} = this.state;
-      let curr = date?date:moment();
-      let maxYear = max?max.year():moment().add(100, 'years').year();
-      let minYear = min?min.year():moment().year();
-      let yearOptions = [];
-      for(let yr=minYear; yr<=maxYear; yr++){
-          yr==curr.year()?yearOptions.push(<option key={yr} value={yr} selected>{yr}</option>)
-                          :yearOptions.push(<option key={yr} value={yr}>{yr}</option>);
-      }
-      return (
-          <div>
-              {moment.months()[curr.month()]}
-              <select style={{marginLeft: 3, fontSize:18, background:"transparent", border:"1px solid #e4e7e7"}} onChange={(e)=>{this.onYearChange(e.target.value)}}>
-                {yearOptions}
-              </select>
-          </div>
-      )
+      const {minDate, maxDate} = this.state;
+      return !isInclusivelyBtwnDays(date, minDate, maxDate);
   }
   render() {
-    const { focused, date } = this.state;
+    const { focused, date, minDate, maxDate } = this.state;
 
     // autoFocus and initialDate are helper props for the example wrapper but are not
     // props on the SingleDatePicker itself and thus, have to be omitted.
     const props = omit(this.props, [
       'autoFocus',
       'initialDate',
+      'minDate',
+      'maxDate'
     ]);
 
     return (
       <SingleDatePicker
         {...props}
         id="date_input"
+        minDate={minDate}
+        maxDate={maxDate}
         date={date}
         focused={focused}
         onDateChange={this.onDateChange}
         onFocusChange={this.onFocusChange}
         isOutsideRange={this.isOutsideRange}
-        renderMonth={this.renderMonth}
+        renderMonth={props.renderMonth}
       />
     );
   }

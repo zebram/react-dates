@@ -261,4 +261,3 @@ export default withStyles(({ reactDates: { color, font, spacing } }) => ({
     paddingBottom: 7,
   },
 }))(CalendarMonth);
-

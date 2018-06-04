@@ -1,6 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { css, withStyles, withStylesPropTypes } from 'react-with-styles';
+import momentPropTypes from 'react-moment-proptypes';
 import { Portal } from 'react-portal';
 import { forbidExtraProps } from 'airbnb-prop-types';
 import { addEventListener } from 'consolidated-events';
@@ -39,6 +40,8 @@ import {
 const propTypes = forbidExtraProps({
   ...withStylesPropTypes,
   ...SingleDatePickerShape,
+  minDate: momentPropTypes.momentObj,
+  maxDate: momentPropTypes.momentObj,
 });
 
 const defaultProps = {
@@ -382,6 +385,8 @@ class SingleDatePicker extends React.Component {
 
   renderDayPicker() {
     const {
+      minDate,
+      maxDate,
       anchorDirection,
       openDirection,
       onDateChange,
@@ -424,6 +429,7 @@ class SingleDatePicker extends React.Component {
       small,
       theme: { reactDates },
     } = this.props;
+
     const { dayPickerContainerStyles, isDayPickerFocused, showKeyboardShortcuts } = this.state;
 
     const onOutsideClick = (!withFullScreenPortal && withPortal) ? this.onClearFocus : undefined;
@@ -433,6 +439,7 @@ class SingleDatePicker extends React.Component {
 
     const withAnyPortal = withPortal || withFullScreenPortal;
 
+    console.log(`renderDayPicker ${date}`);
     return (
       <div // eslint-disable-line jsx-a11y/no-static-element-interactions
         ref={this.setDayPickerContainerRef}
@@ -458,6 +465,8 @@ class SingleDatePicker extends React.Component {
         onClick={onOutsideClick}
       >
         <DayPickerSingleDateController
+          minDate={minDate}
+          maxDate={maxDate}
           date={date}
           onDateChange={onDateChange}
           onFocusChange={onFocusChange}
@@ -539,7 +548,6 @@ class SingleDatePicker extends React.Component {
       verticalSpacing,
       styles,
     } = this.props;
-
     const { isInputFocused } = this.state;
 
     const displayValue = this.getDateString(date);
