@@ -432,28 +432,15 @@ class DayPicker extends React.Component {
         )
     }
     onYearChange(selectedYear, e) {
-      console.log(`onYearChange ${selectedYear}`);
       const { numberOfMonths, isRTL } = this.props;
       const { currentMonth, calendarMonthWidth } = this.state;
-
-      if (e) e.preventDefault();
-/*
-      let translationValue = this.isVertical() ? this.calendarMonthHeights[0] : calendarMonthWidth;
-
-      if (this.isHorizontal()) {
-        if (isRTL) {
-          translationValue = -2 * calendarMonthWidth;
-        }
-
-        const newMonthHeight = Math.max(0, ...this.calendarMonthHeights.slice(0, numberOfMonths));
-        this.adjustDayPickerHeight(newMonthHeight);
-      }
-*/
+      let newMonth = currentMonth.clone().year(selectedYear);
       this.setState({
-        monthTransition: SELECT_YEAR_TRANSITION,
-        translationValue: -2 * calendarMonthWidth,
+        currentMonth: newMonth,
+        monthTransition: null,
+        translationValue: 0,
+        nextFocusedDate: null,
         focusedDate: null,
-        nextFocusedDate: currentMonth.year(selectedYear),
       });
     }
 
@@ -483,7 +470,6 @@ class DayPicker extends React.Component {
   }
 
   onNextMonthClick(nextFocusedDate, e) {
-    console.log(`onNextMonthClick`);
     const { isRTL } = this.props;
     const { calendarMonthWidth } = this.state;
 
@@ -539,7 +525,7 @@ class DayPicker extends React.Component {
     return focusedDate;
   }
 
-  setCalendarMonthHeights(calendarMonthHeights) {
+  setCalendarMonthHeights(calendarMonthHeights, forceUpdate) {
     const { numberOfMonths } = this.props;
     const firstVisibleMonthIndex = this.getFirstVisibleIndex();
     const lastVisibleMonthIndex = firstVisibleMonthIndex + numberOfMonths;
@@ -549,6 +535,7 @@ class DayPicker extends React.Component {
       .filter((_, i) => ((i >= firstVisibleMonthIndex) && (i < lastVisibleMonthIndex)));
     this.calendarMonthGridHeight = Math.max(0, ...visibleCalendarMonthHeights) + MONTH_PADDING;
     this.setState({ hasSetHeight: true });
+    forceUpdate&&this.forceUpdate();
   }
 
   setContainerRef(ref) {
@@ -618,7 +605,6 @@ class DayPicker extends React.Component {
   }
 
   updateStateAfterMonthTransition() {
-    console.log(`updateStateAfterMonthTransition`);
     const {
       onPrevMonthClick,
       onNextMonthClick,
@@ -895,6 +881,7 @@ class DayPicker extends React.Component {
       width: isHorizontal && wrapperHorizontalWidth,
       height,
     };
+
 
     const dayPickerWrapperStyle = {
       width: isHorizontal && wrapperHorizontalWidth,

@@ -122,7 +122,6 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentDidMount() {
-      console.log(`componentDidMount ${this.container}`);
     const { setCalendarMonthHeights } = this.props;
     this.removeEventListener = addEventListener(
       this.container,
@@ -136,16 +135,17 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-      console.log(` componentWillReceiveProps`);
-      console.log( nextProps);
     const { initialMonth, numberOfMonths, orientation } = nextProps;
     const { months } = this.state;
 
+    const hasYearChanged = !this.props.initialMonth.isSame(initialMonth, 'year');
     const hasMonthChanged = !this.props.initialMonth.isSame(initialMonth, 'month');
     const hasNumberOfMonthsChanged = this.props.numberOfMonths !== numberOfMonths;
-    let newMonths = months;
-
-    if (hasMonthChanged && !hasNumberOfMonthsChanged) {
+    this.hasYearChanged = hasYearChanged;
+    let newMonths = months, newYear = initialMonth.year(), initialYear = this.props.initialMonth.year();
+    if (hasYearChanged && !hasNumberOfMonthsChanged) {
+        newMonths = months.map(m => m.year(newYear+(m.year()===initialYear?0:1)));
+    } else if (hasMonthChanged && !hasNumberOfMonthsChanged) {
       if (isAfterDay(initialMonth, this.props.initialMonth)) {
         newMonths = months.slice(1);
         newMonths.push(months[months.length - 1].clone().add(1, 'month'));
@@ -165,7 +165,6 @@ class CalendarMonthGrid extends React.Component {
       this.locale = momentLocale;
       newMonths = newMonths.map(m => m.locale(this.locale));
     }
-
     this.setState({
       months: newMonths,
     });
@@ -176,8 +175,6 @@ class CalendarMonthGrid extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-      console.log(`componentDidUpdate`);
-          console.log(prevProps);
     const {
       isAnimating,
       transitionDuration,
@@ -207,7 +204,6 @@ class CalendarMonthGrid extends React.Component {
   }
 
   onTransitionEnd() {
-      console.log(`onTransitionEnd`);
     const { onMonthTransitionEnd } = this.props;
     onMonthTransitionEnd();
   }
@@ -217,11 +213,23 @@ class CalendarMonthGrid extends React.Component {
   }
 
   setMonthHeight(height, i) {
+    const {numberOfMonths} = this.props;
+    const { setCalendarMonthHeights } = this.props;
     if (this.calendarMonthHeights[i]) {
-      if (i === 0) {
-        this.calendarMonthHeights = [height].concat(this.calendarMonthHeights.slice(0, -1));
-      } else if (i === this.calendarMonthHeights.length - 1) {
-        this.calendarMonthHeights = this.calendarMonthHeights.slice(1).concat(height);
+      if (this.hasYearChanged) {
+        this.calendarMonthHeights[i] = height;
+        if(i === (numberOfMonths + 2 - 1))  {
+          this.setCalendarMonthHeightsTimeout = setTimeout(() => {
+              let forceUpdate = true;
+              setCalendarMonthHeights(this.calendarMonthHeights,forceUpdate);
+          }, 0);
+        }
+      } else {
+        if (i === 0) {
+          this.calendarMonthHeights = [height].concat(this.calendarMonthHeights.slice(0, -1));
+        } else if (i === this.calendarMonthHeights.length - 1) {
+          this.calendarMonthHeights = this.calendarMonthHeights.slice(1).concat(height);
+        }
       }
     } else {
       this.calendarMonthHeights[i] = height;

@@ -439,7 +439,6 @@ class SingleDatePicker extends React.Component {
 
     const withAnyPortal = withPortal || withFullScreenPortal;
 
-    console.log(`renderDayPicker ${date}`);
     return (
       <div // eslint-disable-line jsx-a11y/no-static-element-interactions
         ref={this.setDayPickerContainerRef}
