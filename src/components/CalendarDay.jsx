@@ -111,7 +111,7 @@ class CalendarDay extends React.Component {
     } = this.props;
 
     if (!day) return <td />;
-
+    
     const {
       daySizeStyles,
       useDefaultCursor,

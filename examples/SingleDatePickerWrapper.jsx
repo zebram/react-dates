@@ -10,7 +10,7 @@ import { SingleDatePickerPhrases } from '../src/defaultPhrases';
 import SingleDatePickerShape from '../src/shapes/SingleDatePickerShape';
 import { HORIZONTAL_ORIENTATION, ANCHOR_LEFT } from '../src/constants';
 import isInclusivelyAfterDay from '../src/utils/isInclusivelyAfterDay';
-import isInclusivelyBtwnDays from '../src/utils/isInclusivelyBtwnDays';
+import isInclusivelyBeforeDay from '../src/utils/isInclusivelyBeforeDay';
 
 const propTypes = {
   // example props for the demo
@@ -29,7 +29,7 @@ const propTypes = {
 
 const defaultProps = {
   minDate: moment(),
-  maxDate: moment('20200220','YYYYMMDD'),
+  maxDate: moment().add(100,'year'),
   // example props for the demo
   autoFocus: false,
   initialDate: null,
@@ -74,7 +74,7 @@ const defaultProps = {
   renderDayContents: null,
   enableOutsideDays: false,
   isDayBlocked: () => false,
-  isOutsideRange: day => !isInclusivelyAfterDay(day, moment()),
+  isOutsideRange: day => !(isInclusivelyAfterDay(day, defaultProps.minDate) && isInclusivelyBeforeDay(day, defaultProps.maxDate)),
   isDayHighlighted: () => {},
 
   // internationalization props
@@ -105,7 +105,7 @@ class SingleDatePickerWrapper extends React.Component {
   }
   isOutsideRange(date) {
       const {minDate, maxDate} = this.state;
-      return !isInclusivelyBtwnDays(date, minDate, maxDate);
+      return !(isInclusivelyAfterDay(date, minDate) && isInclusivelyBeforeDay(date, maxDate));
   }
   render() {
     const { focused, date, minDate, maxDate } = this.state;
@@ -127,9 +127,9 @@ class SingleDatePickerWrapper extends React.Component {
         maxDate={maxDate}
         date={date}
         focused={focused}
+        isOutsideRange={this.isOutsideRange}
         onDateChange={this.onDateChange}
         onFocusChange={this.onFocusChange}
-        isOutsideRange={this.isOutsideRange}
         renderMonth={props.renderMonth}
       />
     );

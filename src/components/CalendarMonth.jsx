@@ -170,7 +170,6 @@ class CalendarMonth extends React.Component {
     const monthTitle = renderMonth ? renderMonth(month) : month.format(monthFormat);
 
     const verticalScrollable = orientation === VERTICAL_SCROLLABLE;
-
     return (
       <div
         {...css(

@@ -29,7 +29,7 @@ export default function getCalendarDaySettings(day, ariaLabelFormat, daySize, mo
     modifiers.has('hovered-span')
     || modifiers.has('after-hovered-start')
   );
-
+  
   const isOutsideRange = modifiers.has('blocked-out-of-range');
 
   const formattedDate = { date: day.format(ariaLabelFormat) };

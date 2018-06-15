@@ -432,9 +432,14 @@ class DayPicker extends React.Component {
         )
     }
     onYearChange(selectedYear, e) {
-      const { numberOfMonths, isRTL } = this.props;
+      const { onYearChange, numberOfMonths, isRTL } = this.props;
       const { currentMonth, calendarMonthWidth } = this.state;
       let newMonth = currentMonth.clone().year(selectedYear);
+
+      if (onYearChange) onYearChange(selectedYear);
+
+
+
       this.setState({
         currentMonth: newMonth,
         monthTransition: null,
@@ -521,7 +526,6 @@ class DayPicker extends React.Component {
     if (newMonth && (!focusedDate || !isDayVisible(focusedDate, newMonth, numberOfMonths))) {
       focusedDate = newMonth.clone().startOf('month');
     }
-
     return focusedDate;
   }
 
@@ -551,6 +555,7 @@ class DayPicker extends React.Component {
   }
 
   maybeTransitionSelectedYear(newFocusedDAte) {
+
     return true;
   }
   maybeTransitionNextMonth(newFocusedDate) {
